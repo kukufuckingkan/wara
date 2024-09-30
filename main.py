@@ -4,13 +4,18 @@ from ali import excel
 from aminatu import sql
 from conda import hub
 from flask import Flask, Response
+from flask_cors import CORS
 from memory import database
 from sqlalchemy.engine import Row
 from typing import Any, Sequence
 
+from job import scheduler
+
 # from pyspark.sql import Row  # or replace Row with the appropriate class for your context
 
+
 app = Flask(__name__)
+CORS(app)
 
 
 @app.route('/')
@@ -37,6 +42,8 @@ def find_word():
 
 
 
+
+
 def rows_to_json(rows: Sequence[Row[tuple[Any, ...]]]) -> str:
     # Convert each Row object to a dictionary using _asdict() method
     rows_as_dict = [dict(row._mapping) for row in rows]  # Convert to dictionaries
@@ -44,4 +51,7 @@ def rows_to_json(rows: Sequence[Row[tuple[Any, ...]]]) -> str:
     return json.dumps(rows_as_dict, indent=4)
 
 if __name__ == '__main__':
-    app.run()
+    try:
+        app.run(debug=True)
+    finally:
+        scheduler.shutdown()  # Shutdown the scheduler when exiting the app
